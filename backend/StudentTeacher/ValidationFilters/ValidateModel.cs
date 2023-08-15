@@ -13,22 +13,29 @@ namespace StudentTeacher.ValidationFilters
         {
             string actionNameStudent = "AddNewStudent";
             string actionNameTeacher = "AddNewTeacher";
+            bool isValid = true;
             if (context.ActionDescriptor.DisplayName.Contains(actionNameStudent)) {
                 NewStudent model = context.ActionArguments["model"] as NewStudent;
                 if (model != null && model.DateOfBirth <= DateTime.UtcNow.AddYears(-22)) {
                     context.ModelState.AddModelError(
                    "Date of Birth",
                    "age may not be more than 22");
+                    isValid = false;
                 }
             }
-            if (context.ActionDescriptor.DisplayName.Contains(actionNameTeacher))
+            else if (context.ActionDescriptor.DisplayName.Contains(actionNameTeacher))
             {
                 NewTeacher model = context.ActionArguments["model"] as NewTeacher;
                 if (model != null && model.DateOfBirth >= DateTime.UtcNow.AddYears(-21)) {
                     context.ModelState.AddModelError(
                     "Date of Birth",
                     "age may not be less than 21");
+                    isValid = false;
                 }
+            }
+            if (isValid)
+            {
+                return;
             }
             
 
