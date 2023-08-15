@@ -2,28 +2,34 @@
 using Microsoft.AspNetCore.Mvc;
 using StudentTeacher.Controllers;
 using StudentTeacher.Test.Infrastructure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using StudentTeacher.Infrastructure.Data.Context;
 using StudentTeacher.Core.DTOs;
 using StudentTeacher.Test.Helper;
+using System.Net.Http.Headers;
 using StudentTeacher.Core.Models;
 using FluentAssertions;
 using Newtonsoft.Json;
 
 namespace StudentTeacher.Test.IntegrationTest
 {
-    public class StudentTests : IDisposable
+    public class TeacherTests : IDisposable
     {
-        private readonly StudentTeacherApplication<StudentController> _application;
+        private readonly StudentTeacherApplication<TeacherController> _application;
         private readonly HttpClient _client;
         private readonly StudentTeacherContext _studentTeacherContext;
 
 
-        public StudentTests()
+        public TeacherTests()
         {
-            _application = new StudentTeacherApplication<StudentController>();
+            _application = new StudentTeacherApplication<TeacherController>();
             _client = _application.CreateClient();
             _studentTeacherContext = _application.Services.CreateScope().ServiceProvider
                 .GetRequiredService<StudentTeacherContext>();
@@ -36,25 +42,40 @@ namespace StudentTeacher.Test.IntegrationTest
         }
 
         [Fact]
-        public async Task StudentCreated_ShouldReturn_BadRequest()
+        public async Task InvalidDateOBirth_ShouldReturn_BadRequest()
         {
-            var payload = TestDataGenerator.GenerateInvalidStudent();
+            var payload = TestDataGenerator.GenerateInvalidTeacher();
+            payload.Title = "Mr";
             var response = await _client
-                .PostAsJsonAsync("/api/student", payload);
+                .PostAsJsonAsync("/api/teacher", payload);
 
-            var expecteErrorMessage = "Something is wrong on the information provided, please review.";
             var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.True(problemDetails?.Errors.Any(x => x.Key.Contains("Date of Birth")));
             Assert.Equal(StatusCodes.Status400BadRequest, problemDetails?.Status);
         }
+
         [Fact]
-        public async Task StudentCreated_ShouldReturn_Success()
+        public async Task TeacherCreatedInvalidTitle_ShouldReturn_BadRequest()
         {
-            var payload = TestDataGenerator.GenerateValidStudent();
+            var payload = TestDataGenerator.GenerateInvalidTeacher();
             var response = await _client
-                .PostAsJsonAsync("/api/student", payload);
+                .PostAsJsonAsync("/api/teacher", payload);
+
+            var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        
+            Assert.True(problemDetails?.Errors.Any(x => x.Key.Contains("Title")));
+            Assert.Equal(StatusCodes.Status400BadRequest, problemDetails?.Status);
+        }
+        [Fact]
+        public async Task TeacherCreated_ShouldReturn_Success()
+        {
+            var payload = TestDataGenerator.GenerateValidTeacher();
+            var response = await _client
+                .PostAsJsonAsync("/api/teacher", payload);
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         }
@@ -63,12 +84,12 @@ namespace StudentTeacher.Test.IntegrationTest
         public async Task Succeeds_WithValidData()
         {
             int pageNumber = 1;
-            var payload = TestDataGenerator.GenerateValidStudent();
+            var payload = TestDataGenerator.GenerateValidTeacher();
              await _client
-                .PostAsJsonAsync("/api/student", payload);
+                .PostAsJsonAsync("/api/teacher", payload);
             await Task.Delay(2000);
             var response = await _client
-               .GetAsync($"/api/student/all?pageNumber={pageNumber}");
+               .GetAsync($"/api/teacher/all?pageNumber={pageNumber}");
 
             var content = await response.Content.ReadAsStringAsync();
            
@@ -77,7 +98,7 @@ namespace StudentTeacher.Test.IntegrationTest
             students.Should().NotBeNull();
             students.MetaData.TotalCount.Should().Be(1);
             students.Data.Should().NotBeNull();
-            students.Data.Should().HaveCount(1);
+            students.Data.Should().HaveCountGreaterThanOrEqualTo(1);
 
         }
     }

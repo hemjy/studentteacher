@@ -6,7 +6,7 @@ using StudentTeacher.Core.Models;
 using StudentTeacher.Core.DTOs;
 using StudentTeacher.ValidationFilters;
 
-namespace TeacherTeacher.Controllers
+namespace StudentTeacher.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
