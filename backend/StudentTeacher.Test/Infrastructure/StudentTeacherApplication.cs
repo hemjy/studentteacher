@@ -21,7 +21,7 @@ namespace StudentTeacher.Test.Infrastructure
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll(typeof(DbContextOptions<StudentTeacherContext>));
-                services.AddDbContext<StudentTeacherContext>(options => { options.UseSqlite(_connection); });
+                services.AddDbContext<StudentTeacherContext>(options => { options.UseInMemoryDatabase("StudentTeacher"); });
 
                
             });

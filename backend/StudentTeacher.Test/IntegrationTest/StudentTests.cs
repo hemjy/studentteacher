@@ -16,6 +16,7 @@ using StudentTeacher.Test.Helper;
 using System.Net.Http.Headers;
 using StudentTeacher.Core.Models;
 using FluentAssertions;
+using Newtonsoft.Json;
 
 namespace StudentTeacher.Test.IntegrationTest
 {
@@ -76,9 +77,11 @@ namespace StudentTeacher.Test.IntegrationTest
                .GetAsync($"/api/student/all?pageNumber={pageNumber}");
 
             var content = await response.Content.ReadAsStringAsync();
-            var students = await response.Content.ReadFromJsonAsync<PagedList<StudentToReturn>>();
-
-            response.Should().BeSuccessful();
+           
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var students = JsonConvert.DeserializeObject<PagedList<StudentToReturn>>(content);
+            students.Should().NotBeNull();
+            students.MetaData.TotalCount.Should().Be(1);
             students.Data.Should().NotBeNull();
             students.Data.Should().HaveCount(1);
 
