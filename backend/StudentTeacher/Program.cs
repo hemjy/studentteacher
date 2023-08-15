@@ -15,7 +15,15 @@ builder.Logging.ClearProviders();
 // Add serilog
 builder.Logging.AddSerilog(logger);
 // Add services to the container.
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("MyPolicy", builder =>
+    {
+        builder.WithOrigins("http://localhost:3000")
+               .WithMethods("GET", "POST")
+               .WithHeaders("Content-Type");
+    });
+});
 builder.Services.AddControllers().AddFluentValidation()
      .AddJsonOptions(options => { options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); }); ;
 builder.Services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
@@ -32,7 +40,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("MyPolicy");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
