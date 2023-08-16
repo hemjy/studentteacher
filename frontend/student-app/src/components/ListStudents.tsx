@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { Student } from '../interfaces/Student';
+import { useNavigate } from 'react-router-dom';
 import "./ListStudent.css";
 
-interface Student {
-    name: string;
-    surname: string;
-    nationalId: string;
-    studentNumber: string;
-    dob: Date;
-}
 
 const ListStudents: React.FC = () => {
+    const navigate = useNavigate();
   
     const [students, setStudents] = useState<Student[]>([]);
     useEffect(() => {
@@ -19,10 +15,14 @@ const ListStudents: React.FC = () => {
         .then((data) => setStudents(data.data))
         .catch((error) => console.error('Error fetching data:', error));
     }, []);
-    console.log('stud', students);
+    const AddNewStudent = () => {
+  
+        navigate('/student'); 
+      };
     return (
         <div>
             <h2>List of Student</h2>
+            <button onClick={AddNewStudent}>Add new Student </button>
             <table>
             <tr>
                     <th>Student Number</th>
